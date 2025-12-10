@@ -1,0 +1,77 @@
+---
+title: "my_markdown4"
+author: "aisha"
+date: "2025-12-09"
+output: html_document
+---
+# 1. Introduction
+This report demonstrates a complete analysis workflow using R markdown. It includes data loading, cleaning, analysis, visualization and interpretation.
+
+#2 load libraries
+```{r, message=FALSE}
+library(tidyverse)
+library(knitr)
+```
+# 3 import Data
+```{r}
+data <- tibble(
+  id = 1:10,
+  age = c(23, 45, 34, 29, 50,41, 38, 27, 32, 46),
+  score = c( 55, 72, 68, 60, 80, 75, 70, 58, 65, 78)
+)
+data
+```
+# 4 Data summary
+## 4.1 summary statistics
+```{r}
+summary(data)
+```
+## 4.2 Table of Mean Values
+```{r}
+mean_table <- data %>%
+  summarise(
+    mean_age = mean(age),
+    mean_score = mean(score)
+  )
+kable(mean_table)
+```
+# 5 Visualization
+## 5.1 scatter plot
+```{r}
+ggplot(data, aes(x = age, y = score))+
+  geom_point(size = 3)+
+  geom_smooth(method = ,
+              
+              se = FALSE)
+```
+## 5.2 Histogram
+```{r}
+ggplot(data, aes( x = score))+
+  geom_histogram(bins = 5)
+```
+# 6 simple statistical Analysis
+## 6.1 Linear Regression
+```{r}
+model <- lm (score ~ age, data = data)
+summary(model)
+```
+## 6.2 Interpretation
+The regression model shows how **age predicts score**.
+A positive coefficient means older participants tend to score higher.
+check the *p-value* to see if the relationship is statistically significant.
+# 7 . conclusion
+This report shows a full workflow:
+-Data import
+-summary statistics
+-Visualization
+-Regression analysis
+- Interpretation
+
+
+
+
+
+
+
+
+
