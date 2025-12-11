@@ -1,0 +1,122 @@
+---
+title: "R4.epi3"
+author: "aisha"
+date: "2025-12-11"
+output: html_document
+---
+```{r setup, include=FALSE}
+library(tidyverse)
+library(janitor)
+library(epitools)
+```
+```{r}
+install.packages("janitor")
+```
+```{r}
+library(janitor)
+```
+```{r}
+library(janitor)
+```{r}
+install.packages("tidyverse")
+```
+```{r}
+data <- tibble (
+  id = 1:12,
+  age = 
+    c( 23,45,31,52,37,29,61,48,56,34,27,50),
+  sex =
+    c("female", "male","female","male","female","female",
+      "male","male","female","male","female","male"),
+  smoker =
+    c("no","yes","yes","yes","no","no","yes","no","yes","no",
+      "no","yes"),
+  bmi = c(21.4,29.1,27.8,31.3,24.2,22.7,28.9,26.1,32.4,25.7,
+          23.5,30.8),
+  systolic_bp = c(118,152,134,160,122,115,158,140,166,130,120,
+                  155))
+data
+```
+```{r}
+install.packages("tibble")
+```
+```{r}
+cleaned <- data %>%
+  clean_names() %>%
+  mutate(
+    smoker = factor(smoker),
+    sex = factor(sex),
+    high_bp = ifelse(systolic_bp >= 140, 1, 0)
+  )
+cleaned
+```
+```{r}
+install.packages("magrittr")
+```
+```{r}
+cleaned %>% summarise(
+  mean_age = mean(age),
+  mean_bmi = mean(bmi),
+  prop_smokers = mean(smoker == "yes"),
+  high_bp_rate = mean( high_bp))
+```
+```{r}
+library(tidyverse)
+```
+```{r}
+library(magrittr)
+```
+```{r}
+cleaned %>%
+  group_by(smoker) %>%
+  summarise(
+    mean_bp = mean(systolic_bp),
+    high_bp_prop = mean(high_bp)
+  )
+```
+```{r}
+ls()
+```
+
+# Epidemiology Analysis
+## 2*2 Table
+```{r}
+table_2 <- table(cleaned$smoker, 
+                   cleaned$high_bp)
+table_2
+```
+```{r}
+install.packages("epitools")
+```
+```{r}
+library(epitools)
+```
+#risk ratio
+```{r}
+riskratio(table_2)
+```
+```{r}
+library(epitools)
+```
+# odds ratio
+
+```{r}
+oddsratio(table_2)
+```
+# linear regression
+```{r}
+model <- lm(systolic_bp ~ age + bmi + smoker,
+            data=cleaned)
+summary(model)
+```
+#plotting
+```{r}
+cleaned %>%
+  ggplot(aes(age, systolic_bp, color = smoker)) +
+  geom_point() +
+  geom_smooth(method = "lm")+
+  theme_minimal()
+```
+
+
+
