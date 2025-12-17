@@ -1,0 +1,70 @@
+---
+title: "R 4 epi5"
+author: "aisha"
+date: "2025-12-17"
+output: html_document
+---
+# Using Pipes(%>%)
+```{r}
+my_numbers <- seq(from = 2, to = 100, by = 2)
+my_numbers_logged <- log(my_numbers)
+mean_my_numbers_logged <- mean(my_numbers_logged)
+mean_my_numbers_logged
+```
+```{r}
+mean_my_numbers_logged <- seq(from = 2, to = 100, by = 2) |>
+  log() |>
+  mean()
+mean_my_numbers_logged
+```
+```{r}
+mean(c(2, 4, 6, 8))
+```
+```{r}
+c(2, 4, 6, 8) |> mean()
+```
+
+```{r}
+library(dplyr)
+```
+# simulate some data
+```{r}
+height_and_weight <- tibble(
+  id = c("001", "002", "003", "004", "005"),
+  sex = c("male", "male", "female", "female", "male"),
+  ht_in = c(71, 69, 64, 65, 73),
+  wt_lbs = c(190, 176, 130, 154, 173)
+)
+height_and_weight
+```
+```{r}
+filter(height_and_weight, sex =="female")
+```
+```{r}
+height_and_weight |> filter(sex =="female")
+```
+```{r}
+female_height_and_weight <- height_and_weight |>
+  filter(sex == "female") |>
+  summarise(
+    mean_ht = mean(ht_in),
+    sd_ht = sd(ht_in)
+  ) |>
+  print()
+```
+# file paths
+```{r}
+library(readxl)
+```
+```{r}
+install.packages("readxl")
+```
+```{r}
+list.files()
+```
+#importing plain text
+```{r}
+library(readr)
+```
+#importing space delimited files
+
