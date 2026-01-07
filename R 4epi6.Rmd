@@ -1,0 +1,58 @@
+---
+title: "R4epi6"
+author: "hirbo"
+date: "2026-01-07"
+output: html_document
+---
+# RStudios Data Import Tool
+```{r}
+library(readr)
+comma <- read_csv("~/Downloads/comma.csv", 
+    col_types = cols(ht_in = col_integer(), 
+        wt_lbs = col_integer()))
+View(comma)
+```
+#exporting data
+```{r}
+demo <- data.frame(
+  id = c("001", "002", "003", "004"),
+  age = c(30, 67, 52, 56),
+  edu = c(3, 1, 4, 2)
+  )
+```
+```{r}
+readr::write_csv(demo, "demo.csv")
+```
+
+```{r}
+readr::write_rds(demo, "demo.rds")
+```
+#loading back exported data
+```{r}
+demo <- readr:: read_rds("demo.rds")
+```
+# Descriptive Analysis
+#load dplyr for tibble()
+#coerce a variable to a factor
+```{r}
+as.numeric(demo$edu_f)
+```
+```{r}
+table(demo$edu_char)
+```
+
+```
+```{r}
+table(demo$edu_char)
+```
+```{r}
+table(demo$edu_5catf)
+```
+
+#Height and Weight data
+
+
+
+
+
+
