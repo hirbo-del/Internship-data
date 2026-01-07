@@ -1,0 +1,100 @@
+---
+title: "R4epi6.1"
+author: "hirbo"
+date: "2026-01-07"
+output: html_document
+---
+#Height and Weight data
+##doing descriptive analysis in R 
+```{r}
+install.packages("tibble")
+```
+```{r}
+library(tibble)
+```
+```{r}
+height_and_weight_20 <- tibble (
+  id = c(
+    "001", "002","003","004","005","006","007","008","009","010","011", "012","013","014","015","016","017","018","019","020"
+  ), 
+  sex = c(1, 1, 2, 2, 1, 1, 2, 1, 2, 1, 1, 2, 2, 2, 1, 2, 2,2, 2, 2),
+  sex_f = factor(sex, 1:2, c("male", "female")),
+  ht_in = c(
+    71, 69, 64, 65,73 ,69 ,68 ,73, 71, 66 ,71 ,69 ,66, 68, 75, 69, 66, 65, 65, 65
+  ),
+  wt_lbs = c(
+    190, 176, 130,154, 173, 182, 140,185,157,155,213,151,147,196,212,190,194,176,176,102
+  )
+)
+```
+#view data
+```{r}
+height_and_weight_20
+```
+###calculating frequencies
+```{r}
+table(height_and_weight_20$sex)
+```
+```{r}
+gmodels::CrossTable(height_and_weight_20$sex)
+```
+```{r}
+install.packages("dplyr")
+```
+```{r}
+library(dplyr)
+```
+```{r}
+height_and_weight_20 |>
+  summarise()
+```
+```{r}
+height_and_weight_20 |>
+  summarise(n())
+```
+```{r}
+height_and_weight_20 |>
+  group_by(sex_f) |>
+  summarise(n())
+```
+####calculating percentages
+```{r}
+height_and_weight_20 |>
+  count(sex_f) |>
+  mutate(prop = n/20)
+```
+```{r}
+height_and_weight_20 |>
+  count(sex_f) |>
+  mutate(prop = n/sum(n))
+```
+#mising data
+```{r}
+height_and_weight_20 <- height_and_weight_20 |>
+  mutate(sex_f = replace(sex, c(2, 9), NA)) |>
+  print()
+```
+```{r}
+height_and_weight_20 |>
+  count(sex_f) |>
+  mutate(percent = n/sum(n) * 100)
+```
+##formating results
+```{r}
+height_and_weight_20 |>
+  filter(!is.na(sex_f)) |>
+  count(sex_f) |>
+  mutate(percent = (n/sum(n) *100) |> round(2))
+```
+###using freqtables
+```{r}
+install.packages("freqtables")
+```
+```{r}
+library(freqtables)
+```
+```{r}
+height_and_weight_20 |>
+  filter(!is.na(sex_f)) |>
+  freq_table(sex_f)
+```
