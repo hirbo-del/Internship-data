@@ -1,0 +1,25 @@
+---
+title: "Cox Regression"
+author: "hirbo"
+date: "2026-01-12"
+output: html_document
+---
+#cox proportional hazards model
+```{r}
+library(survival)
+```
+```{r}
+library(survminer)
+```
+```{r}
+cox_fit <- coxph(Surv(time, status2) ~ age + sex + ph.ecog, data = lung)
+summary(cox_fit)
+```
+#check proportional hazards assumption
+```{r}
+cox.zph(cox_fit)
+```
+#vissualize cox model predictions
+```{r}
+ggadjustedcurves(cox_fit, data = lung, variable = "sex")
+```
