@@ -1,0 +1,59 @@
+---
+title: "UCT2pracs"
+author: "hirbo"
+date: "2026-01-12"
+output: html_document
+---
+# load required pqckages
+```{r}
+install.packages("survival", type = "source")
+library(survival)
+```
+```{r}
+install.packages("survminer", type = "binary")
+library(survminer)
+```
+```{r}
+install.packages("dplyr")
+library(dplyr)
+```
+```{r}
+install.packages("ggplot2")
+library(ggplot2)
+```
+```{r}
+install.packages("MASS")
+library(MASS)
+```
+#Regression practice
+##load Boston data
+```{r}
+data("Boston")
+head(Boston)
+str(Boston)
+summary(Boston)
+```
+#linear regression
+```{r}
+lm_fit <- lm(medv ~ rm + lstat + age, data = Boston)
+summary(lm_fit)
+```
+#diagnostic plots for linear regression
+```{r}
+par(mfrow = c(2,2))
+plot(lm_fit)
+```
+#logistic regression
+```{r}
+Boston$high_price <- ifelse(Boston$medv > median(Boston$medv), 1, 0)
+```
+```{r}
+logit_fit <- glm(high_price ~ rm + lstat + age,
+                 data = Boston,
+                 family = binomial)
+summary(logit_fit)
+```
+# Odds ratio
+```{r}
+exp(coef(logit_fit))
+```
