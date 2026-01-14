@@ -1,0 +1,82 @@
+---
+title: "R4epi6.3"
+author: "hirbo"
+date: "2026-01-13"
+output: html_document
+---
+#Measures of dispersion
+```{r}
+library(dplyr)
+```
+#simulate some data
+```{r}
+height_and_weight_20 <- tribble(
+  ~id,   ~sex,     ~ht_in, ~wt_lbs,
+  "001", "Male",   71,     190,
+  "002", "Male",   69,     177,
+  "003", "Female", 64,     130,
+  "004", "Female", 65,     153,
+  "005", NA,       73,     173,
+  "006", "Male",   69,     182,
+  "007", "Female", 68,     186,
+  "008", NA,       73,     185,
+  "009", "Female", 71,     157,
+  "010", "Male",   66,     155,
+  "011", "Male",   71,     213,
+  "012", "Female", 69,     151,
+  "013", "Female", 66,     147,
+  "014", "Female", 68,     196,
+  "015", "Male",   75,     212,
+  "016", "Female", 69,     19000,
+  "017", "Female", 66,     194,
+  "018", "Female", 65,     176,
+  "019", "Female", 65,     176,
+  "020", "Female", 65,     102
+)
+```
+#recreate mode function
+```{r}
+mode_val <- function(x){
+  value_counts <- table(x)
+  results <- names(value_counts)[value_counts ==max(value_counts)]
+  if(length(value_counts) ==length(result)) {
+    result <- NA
+  }
+  result
+}
+```
+```{r}
+height_and_weight_20 %>%
+  summarise(
+    min_height = min(ht_in),
+    mean_height = mean(ht_in),
+    median_height = median(ht_in),
+    mode_height = mode_val(ht_in),
+    max_height = max(ht_in)
+  )
+``` 
+#range
+```{r}
+height_and_weight_20 %>%
+  summarise(
+    min_height = min(ht_in),
+    mean_height = mean(ht_in),
+    max_height = max(ht_in),
+    range = max_height - min_height
+  )
+```
+#variance
+```{r}
+var(c(rep(58, 3), rep(78,3)))
+```
+##comparing distributions
+```{r}
+sim_data <- tibble(
+  all_68 = rep(68,20),
+  half_58_78 = c(rep(58,10), rep(78,10)),
+  even_58_78 = seq(from = 58, to = 78, length.out = 20),
+  half_48_88 = c(rep(48, 10), rep(88, 10)),
+  even_48_88 = seq(from = 48, to = 88, length.out = 20)
+)
+sim_data
+```
