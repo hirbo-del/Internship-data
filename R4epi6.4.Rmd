@@ -1,0 +1,100 @@
+---
+title: "R4epi6.4"
+author: "hirbo"
+date: "2026-01-15"
+output: html_document
+---
+#Describing the Relationship Between a continous outcome and a continous Predictor
+#Pearson Correlation Coefficient(rho(r))
+## Calculating r
+#load the dplyr package
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+```{r}
+set.seed(123)
+df <- tibble(
+  id = 1:20,
+  x = sample(x = 0:100, size = 20, replace = TRUE),
+  y = sample(x = 0:100, size = 20, replace = TRUE)
+)
+df
+```
+```{r}
+ggplot(df, aes(x, y)) +
+  geom_point() +
+  theme_bw()
+```
+```{r}
+ggplot(df, aes(x, y)) +
+  geom_text(aes(label = id), nudge_x = 1.5, nudge_y = 2) +
+  geom_vline(xintercept = 30, col = "red", size = 0.25) +
+  geom_hline(yintercept = 71, col = "red", size = 0.25) +
+  geom_point() +
+  theme_bw()
+```
+```{r}
+cor.test(x = df$x, y = df$y)
+```
+#Correlation intuition
+##Positively correlated data
+```{r}
+tibble(
+  x = 1:10,
+  y = 100 :109,
+  r = cor(x, y)
+) %>%
+  ggplot() +
+  geom_point(aes(x, y)) +
+  geom_text(aes(
+    x =2.5, y = 107.5, label = paste("r = ", r)), col = "blue") +
+  theme_classic()
+```
+#Negatively corelated
+```{r}
+tibble(
+  x = 1:10,
+  y = 100:91,
+  r = cor(x, y)
+) %>%
+  ggplot() +
+  geom_point(aes(x,y)) +
+  geom_text(aes(x =7.5, y = 98, label = paste("r =", r)), col = "blue") +
+  theme_classic()
+```
+```{r}
+  class <- tibble(
+  ht_in = c(70, 63, 62, 67, 67, 58, 64, 69, 65, 68, 63, 68, 69, 66,67,65, 
+            64, 75, 67, 63, 60, 67, 64, 73, 62, 69, 67, 62, 68, 66,66,62, 
+            64, 68, NA, 68, 70, 68, 68, 66, 71, 61, 62, 64, 64, 63,67,66, 
+            69, 76, NA, 63, 64, 65, 65, 71, 66, 65, 65, 71, 64, 71,60,62, 
+            61, 69, 66, NA),
+  
+  wt_lbs = c(216,106,145, 195, 143, 125, 138, 140, 158, 167, 145,297,146, 
+             125,111,125,130, 182, 170, 121, 98, 150, 132, 250, 137, 124, 
+             186, 148,134, 155,122,142,110, 132, 188, 176, 188, 166, 136, 
+             147, 178, 125, 102, 140,139, 60,147, 147,141, 232, 186, 212, 
+             110, 110, 115, 154, 140, 150, 130, NA,171, 156, 92,122, 102, 
+             163, 141, NA)
+  
+)
+```
+#relationship btwn height and weight
+```{r}
+ggplot(class, aes(ht_in, wt_lbs)) +
+  geom_jitter() +
+  theme_classic()
+```
+```{r}
+cor.test(class$ht_in, class$wt_lbs)
+```
+#Ordinary Least Square (OLS) regression line
+#summarizes the relationship
+```{r}
+ggplot(class, aes(ht_in, wt_lbs)) +
+  geom_smooth(method = "lm") +
+  geom_jitter() +
+  theme_classic()
+```
+  
