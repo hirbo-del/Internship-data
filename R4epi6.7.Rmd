@@ -1,0 +1,104 @@
+---
+title: "R4epi6.7"
+author: "hirbo"
+date: "2026-01-15"
+output: html_document
+---
+#Creating and Modifying Columns
+##creating data frame
+```{r}
+library(dplyr)
+```
+```{r}
+class <- tibble(
+  names   = c("John", "Sally", "Brad", "Anne"),
+  heights = c(68, 63, 71, 72)
+)
+class
+```
+```{r}
+class$heights
+```
+```{r}
+class$heights <- class$heights /12
+class
+```
+```{r}
+class$grades <- c( 89, 92,86,98)
+class
+```
+##Bracket notation
+```{r}
+class$heights [3]
+```
+```{r}
+class[["heights"]]
+```
+```{r}
+class[["rank"]] <- c(3,2,4,1)
+class
+```
+```{r}
+set.seed(123)
+
+drug_trial <- tibble(
+  # Study id, there are 20 people enrolled in the trial.
+  id = rep(1:20, each = 3),
+  # Follow-up year, 0 = baseline, 1 = year one, 2 = year two.
+  year = rep(0:2, times = 20),
+  # Participant age a baseline. Must be between the ages of 35 and 75 at 
+  # baseline to be eligible for the study
+  age = sample(35:75, 20, TRUE) %>% rep(each = 3),
+  # Drug the participant received, Placebo or active
+  drug = sample(c("Placebo", "Active"), 20, TRUE) %>% 
+    rep(each = 3),
+  # Reported headaches side effect, Y/N
+  se_headache = if_else(
+    drug == "Placebo", 
+    sample(0:1, 60, TRUE, c(.95,.05)), 
+    sample(0:1, 60, TRUE, c(.10, .90))
+  ),
+  # Report diarrhea side effect, Y/N
+  se_diarrhea = if_else(
+    drug == "Placebo", 
+    sample(0:1, 60, TRUE, c(.98,.02)), 
+    sample(0:1, 60, TRUE, c(.20, .80))
+  ),
+  # Report dry mouth side effect, Y/N
+  se_dry_mouth = if_else(
+    drug == "Placebo", 
+    sample(0:1, 60, TRUE, c(.97,.03)), 
+    sample(0:1, 60, TRUE, c(.30, .70))
+  ),
+  # Participant had myocardial infarction in study year, Y/N
+  mi = if_else(
+    drug == "Placebo", 
+    sample(0:1, 60, TRUE, c(.85, .15)), 
+    sample(0:1, 60, TRUE, c(.80, .20))
+  )
+)
+```
+```{r}
+sample(1:100, 10, TRUE)
+```
+```{r}
+sample(1:100, 10, TRUE)
+```
+```{r}
+set.seed(456)
+sample(1:100, 10, TRUE)
+```
+```{r}
+drug_trial %>%
+   mutate(complete = c(
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+  )
+```
+```{r}
+drug_trial
+class(drug_trial)
+```
+
+  
