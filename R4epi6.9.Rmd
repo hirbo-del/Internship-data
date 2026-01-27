@@ -1,0 +1,103 @@
+---
+title: "R4epi6.9"
+author: "hirbo"
+date: "2026-01-22"
+output: html_document
+---
+```{r}
+library(dplyr)
+```
+```{r}
+df <- tribble(
+  ~id, ~day, ~x,
+    1, 1, 1,
+    1, 2, 11,
+    2, 1, 12,
+    2, 2, 13,
+    2, 2, 14,
+    3, 1, 12,
+    3, 1, 12,
+    3, 2, 13,
+    4, 1, 13,
+    5, 1, 10,
+    5, 2, 11,
+    5, 1, 10
+) %>% 
+  print()
+```
+```{r}
+df %>%
+  distinct()
+```
+```{r}
+df %>%
+  mutate(dup = duplicated(df))
+```
+```{r}
+df %>%
+  distinct(id, day, .keep_all = TRUE)
+```
+```{r}
+df %>%
+  group_by(id, day) %>%
+  filter(n() > 1)%>%
+  count()
+```
+# Working with Dates
+```{r}
+from_sas <- tibble(
+  date = c(10958, 10959, 10960)
+)
+from_sas %>%
+  mutate(new_date = as.Date(date, origin = "1960-01-01"))
+```
+#coercing character strings to dates
+```{r}
+tribble(
+  ~Symbol, ~Description, ~Example,
+  "%a", "Abbreviated weekday name", "Sat",
+  "%A", "Full weekday name", "Saturday",
+  "%b", "Abbreviated month name", "Jan",
+  "%B", "Full month name", "January",
+  "%d", "Day of the month as a number (01–31)", "15",
+  "%m", "Month as a number", "01",
+  "%u", "Weekday as a number (1–7, Monday is 1)", "6",
+  "%U", "Week of the year as a number (00–53) using Sunday as the first day 1 of the week", "02",
+  "%y", "Year without century (00-99)", "00",
+  "%Y", "Year with century", "2000"
+) %>% 
+  knitr::kable()
+```
+
+```{r}
+install.packages("lubridate")
+library(lubridate)
+Sys.Date()
+lubridate ::today()
+Sys.time()
+lubridate::now()
+```
+```{r}
+set.seed(703)
+rand_mill <- rnorm(1000000)
+```
+#save the start time
+```{r}
+start <- lubridate ::now()
+sum <- sum(rand_mill)
+length <- length(rand_mill)
+mean <- sum /length
+mean
+```
+```{r}
+month.name
+month.abb
+```
+#creating a vector containing a sequence of dates
+```{r}
+seq.Date(
+  from = as.Date("2020-01-01"),
+  to = as.Date("2020-01-15"),
+  by = "days"
+)
+```
