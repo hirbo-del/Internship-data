@@ -1,0 +1,107 @@
+---
+title: "ANOVA pracs"
+author: "hirbo"
+date: "2026-02-02"
+output: html_document
+---
+# compare mean tumor size across 3 NSCLC mutation group; EGFR, KRAS, Wild-type
+## create sample data
+```{r}
+tumor_size <- c(2.1, 2.3, 2.5, 2.2, # EGFR
+
+                3.0, 3.2, 3.2, 3.3, # KRAS
+
+                2.6, 2.7, 2.8, 2.9) # Wild-type
+
+group <- factor(rep(c( "EFGR","KRAS", "WT"), each = 4))
+data <- data.frame(tumor_size, group)
+data
+```
+# one way ANOVA
+```{r}
+anova_model <- aov(tumor_size ~ group,
+                   data = data)
+summary(anova_model)
+```
+# check ANOVA assumptions
+```{r}
+shapiro.test(residuals(anova_model))
+```
+# homogeneity of variances
+```{r}
+bartlett.test(tumor_size ~ group, data = data)
+```
+# post hoc test
+```{r}
+TukeyHSD(anova_model)
+```
+# simple visualization
+```{r}
+boxplot(tumor_size ~ group,
+        data = data,
+        xlab = "mutation group",
+        ylab = "tumor size",
+        main = "tumor size by mutatation group")
+```
+## two way ANOVA
+# create data
+```{r}
+tumor_size <- c(2.1,2.3,2.2,2.4, #EGFR + control
+                1.5,1.6,1.4,1.7, #EGFR + drug
+                3.0,3.1,3.2,3.3, #KRAS + control
+                2.6,2.7,2.5,2.8) #KRAS + drug
+mutation <- factor(rep(c("EGFR", "EGFR", "KRAS", "KRAS"), each = 4))
+treatment <- factor(rep(c("control", "drug"), times = 8))
+data <- data.frame(tumor_size, mutation, treatment)
+```
+# run two way ANOVA
+```{r}
+twoway_model <- aov(tumor_size ~mutation *  treatment,data =data)
+summary(twoway_model)
+```
+#residual diagnostics
+```{r}
+plot(twoway_model)
+shapiro.test(residuals(twoway_model))
+```
+# interaction plot
+```{r}
+interaction.plot(treatment, mutation, tumor_size,
+                 xlab = "treatment",
+                 ylab = "mean tumor size",
+                 trace.label = "mutation")
+```
+#post hoc test
+```{r}
+TukeyHSD(twoway_model)
+```
+### Repeated measures ANOVA
+```{r}
+tumor_size <- c(2.1, 2.3,2.6,1.9,2.0, #Baseline
+                1.8,2.0,2.4,1.7,1.9, # 3 months
+                1.5, 1.7, 2.1, 1.4, 1.6) # 6 months
+patient <- factor(rep(1:5, times = 3))
+time <- factor(rep(c("Baseline", "3mo", "6mon"), each = 5))
+data <- data.frame(patient, time, tumor_size)
+```
+#run repeated measures
+```{r}
+rm_model <- aov(tumor_size ~ time +
+                  Error(patient/time), data = data)
+summary(rm_model)
+```
+# post hoc pairwise comparison
+# visualization
+```{r}
+install.packages("dplyr")
+library(dplyr)
+```
+```{r}
+ggplot(data, aes(x = time, y = tumor_size, group= patient)) +
+  geom_line(aes(colour = patient)) +
+  geom_point() +
+  stat_summary(fun=mean, geom="line", size = 1.5, color ="black") +
+  ylab("tumor size") +
+  xlab ("time") +
+  ggtitle("repeated measures: tumor size over time")
+```
