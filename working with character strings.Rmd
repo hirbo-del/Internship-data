@@ -1,0 +1,331 @@
+---
+title: "Working with character strings"
+author: "hirbo"
+date: "2026-02-03"
+output: html_document
+---
+#load tibble
+```{r}
+library(tibble)
+library(dplyr)
+library(stringr)
+```
+#simulate electronic health record data
+```{r}
+data <- tibble(
+  admit_date = as.POSIXct(c(
+    "2017-02-01 05:22:30",
+    "2017-04-08 09:17:17",
+    "2017-04-18 09:17:17",
+    "2017-08-31 18:29:34",
+    "2017-09-13 06:27:07",
+    "2017-09-15 18:29:34",
+    "2017-10-07 06:31:18",
+    "2017-10-08 23:17:18",
+    "2017-10-16 06:31:18",
+    "2017-10-26 23:17:18",
+    "2017-10-27 18:37:00",
+    "2017-12-18 20:47:48",
+    "2017-12-20 13:40:04",
+    "2017-12-26 20:47:48",
+    "2018-01-28 08:49:38"
+  )),
+  name = c(
+    "Zariah Hernandez",
+    "Tatum Chavez",
+    "Tatum S Chavez",
+    "Arabella George",
+    "Jasper Decker",
+    "ARABELLA GEORGE",
+    "Weston Fox",
+    "Ryan Edwards",
+    "Weston Fox,",
+    "Ryan Edwards  ",
+    "Emma Medrano",
+    "Ivy Mccann",
+    "Charlee Carroll",
+    "Ivy   Mccann",
+    "Kane Martin"
+  ),
+  dob = as.Date(c(
+    "1944-09-27",
+    "1952-06-12",
+    "1952-06-12",
+    "1966-06-15",
+    "1954-05-11",
+    "1966-06-15",
+    "2009-08-21",
+    "1917-12-10",
+    "2009-08-21",
+    "1917-12-10",
+    "1975-05-01",
+    "1911-06-21",
+    "1908-07-22",
+    "1911-06-21",
+    "1939-10-27"
+  )),
+  address = c(
+    "3201 ORANGE…",
+    "1117 richmo…",
+    "1117 richmo…",
+    "357 Angle",
+    "3612 LAURA …",
+    "357 Angle",
+    "6433 HATCHE…",
+    "3201 HORIZO…",
+    "6433 HATCHE…",
+    "3201 HORIZO…",
+    "6301 BEECHC…",
+    "5426 CHILDR…",
+    "8190 DUCK C…",
+    "5426 CHILDR…",
+    "4929 asbury"
+  ),
+  city = c(
+    "FORT…",
+    "Fort…",
+    "Fort…",
+    "FORT…",
+    "FORT…",
+    "FORT…",
+    "City…",
+    "City…",
+    "City…",
+    "City…",
+    "KELL…",
+    "FORT…",
+    "City…",
+    "FORT…",
+    "FORT…"
+  ),
+  symptoms = c(
+    "\"Pain…",
+    "Pain",
+    "Pain",
+    "\"Naus…",
+    "\"Pain…",
+    "\"Naus…",
+    "Pain",
+    NA_character_,
+    "Pain",
+    NA_character_,
+    "\"Naus…",
+    "\"Head…",
+    "Headac…",
+    "\"Head…",
+    NA_character_
+  )
+)
+```
+```{r}
+data
+```
+#arranging data by the name column
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number() >1) %>%
+  arrange(name) %>%
+  select(name, dup, dob,address,city)
+```
+#figuring out data entry discrepancies
+```{r}
+data %>%
+  arrange(name) %>%
+  pull(name)
+```
+#cleaning character strings using stringr package
+##coerce to lowercase
+```{r}
+data %>%
+  arrange(name) %>%
+  pull(name) %>%
+  str_to_lower()
+```
+#uppercase
+```{r}
+data %>%
+  arrange(name) %>%
+  pull(name) %>%
+  str_to_upper()
+```
+#title case
+```{r}
+data %>%
+  arrange(name) %>%
+pull(name) %>%
+  str_to_title()
+```
+#sentence case
+```{r}
+data %>%
+  arrange(name) %>%
+  pull(name) %>%
+  str_to_sentence()
+```
+#first strp in cleaning our data
+#lowecase
+```{r}
+data <- data %>%
+  mutate(name = str_to_lower(name)) %>%
+  print()
+```
+#unique people R can find in our data
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number() > 1) %>%
+  arrange(name) %>%
+  select(name, dup,dob,address,city)
+```
+#trim white space from the beginning and end of character strings
+```{r}
+str_trim("Ryan Edwards  ")
+```
+#cleaning data with str_trim()
+```{r}
+data <- data %>%
+  mutate(name = str_trim(name))
+```
+#finding unique people in our data
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number()>1) %>%
+  arrange(name) %>%
+  select(name,dup,dob,address,city)
+```
+#regular expressions
+#remove the comma
+```{r}
+str_replace(
+  string = "weston fox,",
+  pattern = ",",
+  replacement = ""
+)
+```
+#next step in cleaning data using str_replace function
+```{r}
+data <- data %>%
+  mutate(name = str_replace(name, "," ,  ""))
+```
+#checking unique people R finds in our data
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number() > 1) %>%
+  arrange(name) %>%
+  select(name, dup, dob, address,city)
+```
+#remove middle initial
+```{r}
+str_replace(
+  string = "tatum s chavez",
+  pattern ="\\W",
+  replacement = ""
+)
+```
+#next step in cleaning data using str_replace function
+```{r}
+data <- data %>%
+  mutate(name = str_replace(name, "\\w ", ""))
+```
+#unique people R would find in our data
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number() > 1) %>%
+  arrange(name) %>%
+  select(name,dup,dob,address,city)
+```
+#remove double spaces
+```{r}
+str_replace(
+  string = "Ivy Mccann" ,
+  pattern = "\\s{2,}",
+  replacement = ""
+)
+```
+#final step in cleaning the name column
+```{r}
+data <- data %>%
+  mutate(name = str_replace(name, "\\s{2}", " "))
+```
+```{r}
+data %>%
+  group_by(name) %>%
+  mutate(dup = row_number() > 1) %>%
+  arrange(name) %>%
+  select(name, dup, dob,address,city)
+```
+#calculate unique people
+```{r}
+data %>%
+  group_by(name) %>%
+  filter(row_number() == 1) %>%
+  ungroup() %>%
+  summarise('unique people' = n())
+```
+#subset data to include one row only for each person
+```{r}
+data_unique <- data %>%
+  group_by(name) %>%
+  filter(row_number() ==1) %>%
+  ungroup() %>%
+  print()
+```
+#initial count of how many people live in the city
+```{r}
+data %>%
+  group_by(city) %>%
+  summarise(n=n())
+```
+```{r}
+data<- data %>%
+  mutate(
+    address = tolower(address),
+    city = tolower(city)
+  )
+```
+```{r}
+data %>%
+  group_by(city) %>%
+  summarise(n = n())
+```
+```{r}
+data <- data %>%
+  mutate(city = str_replace(city, "city of ", " "))
+```
+```{r}
+data %>%
+  group_by(city) %>%
+  summarise(n = n())
+```
+#separate values into component parts
+```{r}
+str_extract("zariah hernandez", "^\\w+")
+```
+#separate full name into name_first and name_last
+```{r}
+data <- data %>%
+  mutate(
+    #separate name into first and last name
+    name_first = str_extract(name, "^\\w+"),
+    name_last = str_extract(name, "\\w+$")
+  )
+```
+```{r}
+data %>%
+  
+select(name, name_first, name_last)
+```
+##Dummy variables
+```{r}
+data %>%
+  select(name_first, name_last,symptoms)
+```
+```{r}
+data %>%
+  group_by(symptoms) %>%
+  summarise(n = n())
+```
