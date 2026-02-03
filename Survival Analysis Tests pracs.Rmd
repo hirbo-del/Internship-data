@@ -1,0 +1,76 @@
+---
+title: "Survival Analysis Tests pracs"
+author: "hirbo"
+date: "2026-02-02"
+output: html_document
+---
+#Survival Analysis Tests
+```{r}
+library(survival)
+library(survminer)
+```
+#load practice dataset
+```{r}
+data(lung)
+head(lung)
+```
+```{r}
+lung$status <- ifelse(lung$status == 2, 1, 0)
+```
+#create survival object
+```{r}
+S <- Surv(time = lung$time, event = lung$status)
+S[1:10]
+```
+#Kaplan-Meir curves
+```{r}
+km_fit <- survfit(S ~ sex, data = lung)
+ggsurvplot(
+  km_fit,
+  data = lung,
+  risk.table = TRUE,
+  pval = TRUE,
+  conf.int = TRUE
+)
+```
+#log rank test
+```{r}
+survdiff(S ~ sex, data = lung)
+```
+#Gehan wilcoxon test
+```{r}
+survdiff(S ~ sex, data = lung, rho = 1)
+```
+#Toren-Ware Test
+##helps when curves cross mid-follow up
+```{r}
+survdiff(S ~ sex, data = lung, rho = 0.5)
+```
+#Cox Proportional Hazards Model
+#HR >1 higher risk of event
+#HR <1 lower risk of event
+```{r}
+cox_model <- coxph(S ~ sex + age, data = lung)
+summary(cox_model)
+```
+#Restricted Mean Survival Time (RMST)
+```{r}
+install.packages("survRM2")
+library(survRM2)
+```
+```{r}
+ survRM2::rmst2(
+  time = lung$time,
+  status = lung$status,
+  arm = lung$sex,
+  tau = 365
+)
+```
+##cox model diagnostics
+#(a) proportional hazard test
+```{r}
+cox_model <- coxph(S ~ sex +age, data = lung)
+```
+```{r}
+cox.zph( cox_model)
+```
