@@ -1,0 +1,259 @@
+---
+title: "Conditional Operations"
+author: "hirbo"
+date: "2026-02-04"
+output: html_document
+---
+#Conditional Operations
+```{r}
+library(dplyr)
+```
+#simulate some data
+```{r}
+rainy_days <- tibble(
+  day = 1:5,
+  weather = c("rain", "rain", "no rain","rain", "no rain")
+) %>%
+  print()
+```
+#creating new column in our data called raincoat using if_else function to set conditions
+```{r}
+rainy_days %>%
+  mutate(
+    raincoat = if_else(
+      condition = weather =="rain",
+      true = "wear",
+      false = "no wear"
+    )
+  )
+```
+```{r}
+rainy_days$weather == "rain"
+```
+#operands and operators
+```{r}
+df <- tibble(
+  id = c(1,1,2,2),
+  outcome = c(0, 1, 1, 1)
+) %>%
+  print()
+```
+```{r}
+df %>%
+  mutate(
+    #odd rows are treatment A
+    #even rows are treatment B
+    treatment = if_else(row_number() %% 2 ==1, "A", "B")
+  )
+```
+#using modulus operator to add a treatment column
+```{r}
+df <- tibble(
+  id = c(1,1,2,2),
+  outcome = c(0,1,1,1)
+) %>%
+  print()
+```
+```{r}
+df %>%
+  mutate(
+    # odd rows are treatment A
+    #even rows are treatment B
+    treatment = if_else(row_number() %% 2 == 1, "A","B")
+  )
+```
+#using the equality operator when there are missing values can give results that may be unexpected
+```{r}
+df <- tibble(
+  name1 = c("jon", "john", NA),
+  name2 = c("jon", "jon","jon")
+)
+```
+```{r}
+df %>%
+  mutate(
+    name_match = name1 ==name2
+  )
+```
+#different ways we can get FALSE instead of NA by using if_else function
+```{r}
+df %>%
+  mutate(
+    name_match = name1 == name2,
+    name_match = if_else(is.na(name_match), FALSE, name_match)
+  )
+```
+#Testing multiple conditions simultaneously
+#simulate some blood pressure data
+```{r}
+blood_pressure <- tibble(
+  id = 1:10,
+  sysbp = c(152, 120,119,123,135,83,191,147,209,166),
+  diasbp = c(78, 60,88,76,85,54,116,95,100,106)
+) %>%
+  print()
+```
+#create new column containing information about whether each person has normal blood pressure or not
+```{r}
+blood_pressure %>% 
+  mutate(bp = if_else(sysbp < 120 & diasbp < 80, "Normal", "Not Normal"))
+```
+#Testing a sequence of a condition
+```{r}
+blood_pressure %>% 
+  mutate(
+    bp = case_when(
+      sysbp < 120 & diasbp < 80                               ~ "Normal",
+      sysbp >= 120 & sysbp < 130 & diasbp < 80                ~ "Elevated",
+      sysbp >= 130 & sysbp < 140 | diasbp >= 80 & diasbp < 90 ~ "Hypertension Stage 1",
+      sysbp >= 140 | diasbp >= 90                             ~ "Hypertension Stage 2"
+    )
+  )
+```
+#Recoding variables
+#simulate some age data
+```{r}
+set.seed(123)
+ages <- tibble(
+  id  = 1:10,
+  age = c(sample(1:30, 9, TRUE), NA)
+) %>% 
+  print()
+```
+#Recording Variables
+#simulate some data
+```{r}
+# Simulate some age data
+set.seed(123)
+ages <- tibble(
+  id  = 1:10,
+  age = c(sample(1:30, 9, TRUE), NA)
+) %>% 
+  print()
+```
+#collapsing age variable
+```{r}
+ages %>%
+  mutate(
+    age_3cat = case_when(
+      age <12 ~1
+    )
+  )
+```
+```{r}
+ages %>%
+  mutate(
+    age_3cat = case_when(
+      age <12 ~ 1,
+      age >= 12 & age < 18 ~2
+    )
+  )
+```
+```{r}
+ages %>%
+  mutate(
+    age_3cat = case_when(
+      age <12 ~ 1,
+      age>= 12 & age<18 ~2,
+      age >= 18 ~ 3
+    )
+  )
+```
+#case_when() is lazy
+#it stops evaluating two sided function for a value as soon as it finds one that is true. Example;
+```{r}
+df <- tibble(
+  number = c(1,2,3)
+) %>%
+  print()
+```
+```{r}
+df %>%
+  mutate(
+    size = case_when(
+    number < 2 ~"small",
+    number <3 ~ "medium",
+    number < 4 ~ "large"
+  )
+  )
+```
+#Recode missing
+#simulate some data
+```{r}
+demographics <- ages %>% 
+  mutate(
+    race     = c(1, 2, 1, 4, 7, 1, 2, 9, 1, 3),
+    hispanic = c(7, 0, 1, 0, 1, 0, 1, 9, 0, 1)
+  ) %>% 
+  print()
+```
+```{r}
+demographics %>% 
+  mutate(
+    # Recode 7 and 9 to missing
+    race_recode = if_else(race == 7 | race == 9, NA, race),
+    hispanic_recode = if_else(hispanic == 7 | hispanic == 9, NA, hispanic)
+  )
+```
+#NA_real instead of NA
+```{r}
+demographics %>% 
+  mutate(
+    # Recode 7 and 9 to missing
+    race_recode = if_else(race == 7 | race == 9, NA_real_, race),
+    hispanic_recode = if_else(hispanic == 7 | hispanic == 9, NA_real_, hispanic)
+  )
+```
+```{r}
+demographics %>% 
+  mutate(
+    # Recode 7 and 9 to missing
+    race_recode     = if_else(race == 7 | race == 9, NA_real_, race),
+    hispanic_recode = if_else(hispanic == 7 | hispanic == 9, NA_real_, hispanic),
+    race_eth_4cat   = case_when(
+      # White, non-Hispanic
+      race_recode == 1 & hispanic_recode == 0 ~ 1,
+      # Black, non-Hispanic
+      race_recode == 2 & hispanic_recode == 0 ~ 2,
+      # American Indian or Alaskan Native to Other race, non-Hispanic
+      race_recode == 3 & hispanic_recode == 0 ~ 4,
+      # Asian to Other race, non-Hispanic
+      race_recode == 4 & hispanic_recode == 0 ~ 4,
+      # Pacific Islander to Other race, non-Hispanic
+      race_recode == 4 & hispanic_recode == 0 ~ 4,
+      # Hispanic, any race
+      hispanic_recode == 1                    ~ 3
+    )
+  )
+```
+
+#Consolidated code chunk that will clean our data and make it easier to read
+```{r}
+demographics %>% 
+  mutate(
+    age_3cat = case_when(
+      age < 12  ~ 1, # child
+      age < 18  ~ 2, # adolescent
+      age >= 18 ~ 3  # adult
+    ),
+    age_3cat_f = factor(
+      age_3cat, 
+      labels = c("child", "adolescent", "adult")
+    ),
+  
+    race_eth_4cat = case_when(
+      is.na(hispanic) | hispanic %in% c(7, 9) ~ NA_real_, # Unknown ethnicity
+      hispanic == 1                           ~ 3,        # Hispanic, any race
+      is.na(race) | race %in% c(7, 9)         ~ NA_real_, # non-Hispanic, unknown race
+      race == 1                               ~ 1,        # White, non-Hispanic
+      race == 2                               ~ 2,        # Black, non-Hispanic
+      TRUE                                    ~ 4         # Other race, non-Hispanic
+    ),
+    race_eth_4cat_f = factor(
+      race_eth_4cat,
+      labels = c(
+        "White, non-Hispanic", "Black, non-Hispanic", "Hispanic, any race", "Other race, non-Hispanic",
+        print()
+      )
+    )
+```
