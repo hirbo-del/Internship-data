@@ -1,0 +1,218 @@
+---
+title: ''
+author: "hirbo"
+date: "Working with multiple Data frames"
+output: html_document
+---
+#Working with multiple Data frames
+#combining verticalkly and combining horizontally
+#vertically
+```{r}
+library(dplyr)
+```
+#simulate data
+```{r}
+trial <- tibble(
+  year = c(2016, 2017,2018,2019),
+  n = c(501,499,498,502),
+  outcome = c(51,52,49,50)
+) %>%
+  print()
+```
+```{r}
+trial_2020 <- tibble(
+  year = 2020,
+  n = 500,
+  outcome = 48
+) %>%
+  print()
+```
+```{r}
+trial %>%
+  bind_rows(trial_2020)
+```
+#combining more than 2 data frames
+```{r}
+trial_2021 <- tibble(
+  year = 2021, 
+  n = 598,
+  outcome =57
+) %>%
+  print()
+```
+```{r}
+trial %>%
+  bind_rows(trial_2020, trial_2021)
+```
+#Adding rows with differing columns
+```{r}
+trial_2020 <- tibble(
+  year = 2020,
+  n =500,
+  outcome = 48,
+  adv_event = 3 
+) %>%
+  print()
+```
+#differing column positions
+```{r}
+trial_2020 <- tibble(
+  year      = 2020,
+  n         = 500,
+  adv_event = 3, # This was previously the fourth column
+  outcome   = 48 # This is the thrid column in trial
+) %>% 
+  print()
+```
+#differing column names
+```{r}
+trial_2020 <- tibble(
+  year      = 2020,
+  count     = 500,
+  adv_event = 3,
+  outcomes  = 48
+) %>% 
+  print()
+```
+#we need to rename columns in a separate step for bind_rows to recognise it
+```{r}
+trial_2020_rename <- trial_2020 %>% 
+  rename(
+    n = count,
+    outcome = outcomes
+  )
+
+trial %>% 
+  bind_rows(trial_2020_rename)
+```
+#or we can rename and bind them in a single step
+```{r}
+trial %>% 
+  bind_rows(
+    trial_2020 %>% 
+      rename(
+        n = count,
+        outcome = outcomes
+      )
+  )
+```
+#Combining Data frames Horizontally
+#by position
+```{r}
+df1 <- tibble(
+  color = c("red", "green", "blue"),
+  size  = c("small", "medium", "large")
+) %>% 
+  print()
+```
+```{r}
+df2 <- tibble(
+  amount = c(1, 4, 3),
+  dose   = c(10, 20, 30)
+) %>% 
+  print()
+```
+```{r}
+df1 %>%
+  bind_cols(df2)
+```
+#by key values
+#simulate data
+```{r}
+demographics <- tibble(
+  id       = c("1001", "1002", "1003", "1004"),
+  dob      = as.Date(c("1968-12-14", "1952-08-03", "1949-05-27", "1955-03-12")),
+  race_eth = c(1, 2, 2, 4)
+) %>% 
+  print()
+```
+```{r}
+grip_strength <- tibble(
+  id     = c("1002", "1001", "1003", "1004"),
+  grip_r = c(32, 28, 32, 22),
+  grip_l = c(30, 30, 28, 22)
+) %>% 
+  print()
+```
+#merge these two data
+#one-one relationship merge
+```{r}
+demographics %>%
+  bind_cols(grip_strength)
+```
+#using left_join() function
+```{r}
+demographics %>%
+  left_join(grip_strength, by = "id")
+```
+#Differing rows
+```{r}
+demographics <- tibble(
+  id       = c("1001", "1002", "1003", "1004", "1005"),
+  dob      = as.Date(c(
+    "1968-12-14", "1952-08-03", "1949-05-27", "1955-03-12", "1942-06-07"
+  )),
+  race_eth = c(1, 2, 2, 4, 3)
+) %>% 
+  print()
+```
+```{r}
+demographics %>%
+  left_join(grip_strength, by = "id")
+```
+#Differing key column names
+```{r}
+grip_strength <- tibble(
+  pid    = c("1002", "1001", "1003", "1004"),
+  grip_r = c(32, 28, 32, 22),
+  grip_l = c(30, 30, 28, 22)
+) %>% 
+  print()
+```
+```{r}
+demographics %>%
+  left_join(grip_strength, by = "id")
+```
+#to correct the error we should tell the left_join which column is the matching key column in the opposite data frame
+```{r}
+demographics %>%
+  left_join(grip_strength, by = c ("id" = "pid"))
+```
+#one-to-many-relationship merge
+```{r}
+demographics
+```
+#grip_strength measured pre and post intervention
+```{r}
+grip_strength <- tibble(
+  id     = rep(c("1001", "1002", "1003", "1004"), each = 2),
+  visit  = rep(c("pre", "post"), 4),
+  grip_r = c(32, 33, 28, 27, 32, 34, 22, 27),
+  grip_l = c(30, 32, 30, 30, 28, 30, 22, 26)
+) %>% 
+  print()
+```
+```{r}
+demographics %>%
+  left_join(grip_strength, by = "id")
+```
+#multiple key column
+```{r}
+emr <- tibble(
+  id     = rep(c("1001", "1002", "1003", "1004"), each = 2),
+  visit  = rep(c("pre", "post"), 4),
+  weight = c(105, 99, 200, 201, 136, 133, 170, 175)
+) %>% 
+  print()
+```
+#add participant weight to our analysis
+```{r}
+left_join(grip_strength, emr, by = "id")
+```
+#telling left_join to merge data frames by id and visit
+```{r}
+demographics %>% 
+  left_join(grip_strength, by = "id") %>% 
+  left_join(emr, by = c("id", "visit"))
+```
+#told left_join() that it needed to match the values in the id key column and the values in the visit key column in order to align the rows in the combined demographics/grip_strength data frame with the emr data frame
