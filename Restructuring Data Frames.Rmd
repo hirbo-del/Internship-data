@@ -1,0 +1,441 @@
+---
+title: "Restructuring Data Frames"
+author: "hirbo"
+date: "2026-02-17"
+output: html_document
+---
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+#pivoting longer
+```{r}
+babies <- tibble(
+  id       = 1001:1008,
+  sex      = c("F", "F", "M", "F", "M", "M", "M", "F"),
+  weight_3  = c(9, 11, 17, 16, 11, 17, 16, 15),
+  weight_6  = c(13, 16, 20, 18, 15, 21, 17, 16),
+  weight_9  = c(16, 17, 23, 21, 16, 25, 19, 18),
+  weight_12 = c(17, 20, 24, 22, 18, 26, 21, 19)
+) %>% 
+  print()
+```
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols         = starts_with("weight"),
+    names_to     = "months",
+    names_prefix = "weight_",
+    values_to    = "weight"
+  ) %>% 
+  print()
+```
+#the names_to arguments
+```{r}
+babies %>%
+  pivot_longer(
+    cols = starts_with("weight")
+  )
+```
+#the names_prefix arguments
+```{r}
+babies %>% 
+  pivot_longer(
+    cols         = starts_with("weight"),
+    names_to     = "months",
+    names_prefix = "weight_"
+  )
+```
+#the values_to argument
+```{r}
+babies %>% 
+  pivot_longer(
+    cols         = starts_with("weight"),
+    names_to     = "months",
+    names_prefix = "weight_",
+    values_to    = "weight"
+  )
+```
+#the names_transform function
+```{r}
+babies %>% 
+  pivot_longer(
+    cols         = starts_with("weight"),
+    names_to     = "months",
+    names_prefix = "weight_",
+    values_to    = "weight"
+  ) %>% 
+  mutate(months = as.integer(months))
+```
+```{r}
+babies %>% 
+  pivot_longer(
+    cols            = starts_with("weight"),
+    names_to        = "months",
+    names_prefix    = "weight_",
+    names_transform = list(months = as.integer),
+    values_to       = "weight"
+  )
+```
+#pivoting multiple set column
+```{r}
+set.seed(123)
+babies <- tibble(
+  id       = 1001:1008,
+  sex      = c("F", "F", "M", "F", "M", "M", "M", "F"),
+  weight_3  = c(9, 11, 17, 16, 11, 17, 16, 15),
+  weight_6  = c(13, 16, 20, 18, 15, 21, 17, 16),
+  weight_9  = c(16, 17, 23, 21, 16, 25, 19, 18),
+  weight_12 = c(17, 20, 24, 22, 18, 26, 21, 19),
+  length_3  = c(17, 19, 23, 20, 18, 22, 21, 18),
+  length_6  = round(length_3 + rnorm(8, 2, 1)),
+  length_9  = round(length_6 + rnorm(8, 2, 1)),
+  length_12 = round(length_9 + rnorm(8, 2, 1)),
+) %>% 
+  print()
+```
+```{r}
+babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = c(".value", "months"),
+    names_sep = "_"
+  )
+```
+#restructure to person_period
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols         = starts_with("weight"),
+    names_to     = "months",
+    names_prefix = "weight_",
+    values_to    = "weight"
+  ) %>% 
+  print()
+```
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols         = c(-id, -sex),
+    names_to     = "months",
+    names_prefix = "weight_",
+    values_to    = "weight"
+  ) %>% 
+  print()
+```
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols         = c(-id, -sex),
+    names_to     = "months",
+    names_prefix = c("weight_", "length_"),
+    values_to    = "weight"
+  ) %>% 
+  print()
+```
+# drop the names_prefix argument altogether before we can move forward to the correct solution:
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = "months",
+    values_to = "weight"
+  ) %>% 
+  print()
+```
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols     = c(-id, -sex),
+    names_to = "months"
+  ) %>% 
+  print()
+```
+#the names_sep argument
+# It turns out that we can use the names_sep argument to give pivot_longer() this information.
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = "months",
+    names_sep = "_"
+  ) %>% 
+  print()
+```
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = c("measure", "months"),
+    names_sep = "_"
+  ) %>% 
+  print()
+```
+#What we really need is for pivot_longer() to make weight one column and length a separate column, and then put the appropriate values from value under each. We can do this with the .value special value.
+# let’s add the .value special value to our code:
+```{r}
+babies_long <- babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = c(".value", "months"),
+    names_sep = "_",
+    names_transform = list(months = as.integer)
+  ) %>% 
+  print()
+```
+```{r}
+babies %>% 
+  pivot_longer(
+    cols      = c(-id, -sex),
+    names_to  = c("months", ".value"),
+    names_sep = "_"
+  )
+```
+#why person period
+```{r}
+babies_long %>% 
+  mutate(months = factor(months, c(3, 6, 9, 12))) %>% 
+  ggplot() +
+    geom_point(aes(weight, length, color = months)) +
+    labs(
+      x = "Weight (Pounds)",
+      y = "Length (Inches)",
+      color = "Age (Months)"
+    ) +
+    theme_classic()
+```
+#pivoting wider
+```{r}
+babies_long
+```
+#we will use tidyr’s pivot_wider() function to restructure the data:
+```{r}
+babies <- babies_long %>% 
+  pivot_wider(
+    names_from  = "months",
+    values_from = c("weight", "length")
+  ) %>% 
+  print()
+```
+```{r}
+df <- tribble(
+  ~id, ~measure, ~lbs_inches,
+  1, "weight", 9,
+  1, "length", 17,
+  2, "weight", 11,
+  2, "length", 19 
+) %>% 
+  print()
+```
+```{r}
+df %>% pivot_wider(
+  names_from  = "measure",
+  values_from = "lbs_inches"
+)
+```
+#why person level
+```{r}
+babies %>%
+  count(sex)
+```
+#pivoting summary statistics
+#wide to long
+```{r}
+mean_weights <- babies %>% 
+  summarise(
+    mean(weight_3),
+    sd(weight_3),
+    mean(weight_6),
+    sd(weight_6),
+    mean(weight_9),
+    sd(weight_9),
+    mean(weight_12),
+    sd(weight_12),
+  ) %>% 
+  print()
+```
+```{r}
+mean_weights %>% 
+  pivot_longer(
+    cols = everything(),
+    names_to = c(".value", "measure", "months"),
+    names_pattern = "(\\w+)\\((\\w+)_(\\d+)"
+  )
+```
+#pivoting summary statistics long to wide
+#results of early descriptive analysis
+```{r}
+summary_stats <- tribble(
+  ~period, ~behavior, ~value, ~n, ~n_total, ~percent,
+  "School Year Weekends", "Long sleeve shirt", "Never", 6, 78,  8,  
+  "School Year Weekends", "Long sleeve shirt", "Seldom", 16, 78,    21, 
+  "School Year Weekends", "Long sleeve shirt", "Sometimes", 33, 78, 42, 
+  "School Year Weekends", "Long sleeve shirt", "Often", 17, 78, 22, 
+  "School Year Weekends", "Long sleeve shirt", "Always", 6, 78, 8,  
+  "School Year Weekends", "Long Pants", "Never", 5, 79, 6,  
+  "School Year Weekends", "Long Pants", "Seldom",   15, 79, 19, 
+  "School Year Weekends", "Long Pants", "Sometimes", 32, 79, 41,    
+  "School Year Weekends", "Long Pants", "Often", 19, 79, 24,    
+  "School Year Weekends", "Long Pants", "Always",   8, 79, 10,  
+  "Summer", "Long sleeve shirt", "Never",   9, 80, 11,  
+  "Summer", "Long sleeve shirt", "Seldom", 18, 80, 22,  
+  "Summer", "Long sleeve shirt", "Sometimes", 31,   80, 39, 
+  "Summer", "Long sleeve shirt", "Often",   14, 80, 18, 
+  "Summer", "Long sleeve shirt", "Always", 8,   80, 10, 
+  "Summer", "Long Pants", "Never", 7,   76, 9,  
+  "Summer", "Long Pants", "Seldom", 16, 76, 21, 
+  "Summer", "Long Pants", "Sometimes", 27,  76, 36, 
+  "Summer", "Long Pants", "Often", 18, 76,  24, 
+  "Summer", "Long Pants", "Always", 8, 76,  11
+) %>% 
+  print()
+```
+```{r}
+summary_stats %>% 
+  # Combine n and percent into a single character string
+  mutate(n_percent = paste0(n, " (", percent, ")")) %>% 
+  # We no longer need n, n_total, percent
+  select(-n:-percent) %>% 
+  pivot_wider(
+    names_from = "period",
+    values_from = "n_percent"
+  )
+```
+#Tidy data
+#each variable must have its own column
+```{r}
+births_ntd <- tibble(
+  state   = rep(c("CA", "FL", "TX"), each = 2),
+  outcome = rep(c("births", "neural tube defects"), 3),
+  count   = c(454920, 318, 221542, 155, 378624, 265)
+) %>% 
+  print()
+```
+```{r}
+births_ntd %>% 
+  pivot_wider(
+    names_from  = "outcome",
+    values_from = "count"
+  )
+```
+```{r}
+births_sex <- tibble(
+  state  = c("CA", "FL", "TX"),
+  f_2018 = c(222911, 108556, 185526),
+  m_2018 = c(232009, 112986, 193098)
+) %>% 
+  print()
+```
+```{r}
+births_sex %>% 
+  pivot_longer(
+    cols      = -state,
+    names_to  = c("sex", "year"),
+    names_sep = "_",
+    values_to = "births"
+  )
+```
+#each observation must have its own row
+```{r}
+babies
+```
+```{r}
+births_decade <- tibble(
+  state  = c("CA", "FL", "TX"),
+  `2010` = c(409428, 199388, 340762),
+  `2020` = c(454920, 221542, 378624)
+) %>% 
+  print()
+```
+#tidy data using pivot_longer()
+```{r}
+births_decade %>% 
+  pivot_longer(
+    cols      = -state,
+    names_to  = "year",
+    values_to = "births"
+  )
+```
+#each value must have its own cell
+```{r}
+baby_sleep <- tibble(
+  id          = c(1001, 1002, 1003),
+  sleep_range = c(".5-2", ".75-2.4", "1.1-3.8")
+) %>% 
+  print()
+```
+#tidy using separate() function
+```{r}
+baby_sleep %>% 
+  separate(
+    col     = sleep_range,
+    into    = c("min_hours", "max_hours"),
+    sep     = "-",
+    convert = TRUE
+  )
+```
+#the complete function
+#to fillin the holes in our data
+```{r}
+reports <- tibble(
+  date      = as.Date(c(
+    "2019-10-29", "2019-10-29", "2019-10-30", "2019-11-02", "2019-11-02"
+  )),
+  emp_id    = c(5123, 2224, 5153, 9876, 4030),
+  report_id = c("a8934", "af2as", "jzia3", "3293n", "dsf98")
+) %>% 
+  print()
+```
+```{r}
+reports %>%
+  count(date)
+```
+#calculate mean
+```{r}
+reports %>% 
+  count(date) %>% 
+  summarise(mean_reports_per_day = mean(n))
+```
+#using complete() and seq.date to fill in the holes in our count data
+```{r}
+reports %>% 
+  count(date) %>% 
+  complete(
+    date = seq.Date(
+      from = as.Date("2019-10-28"), 
+      to = as.Date("2019-11-03"), 
+      by = "days"
+    )
+  )
+```
+#change NA to zero
+```{r}
+reports %>% 
+  count(date) %>% 
+  complete(
+    date = seq.Date(
+      from = as.Date("2019-10-28"), 
+      to = as.Date("2019-11-03"), 
+      by = "days"
+    ),
+    fill = list(n = 0)
+  )
+```
+#calculate the correct value of mean numbers of reports per day
+```{r}
+reports %>% 
+  count(date) %>% 
+  complete(
+    date = seq.Date(
+      from = as.Date("2019-10-28"), 
+      to = as.Date("2019-11-03"), 
+      by = "days"
+    ),
+    fill = list(n = 0)
+  ) %>% 
+  summarise(mean_reports_per_day = mean(n))
+```
+
+
+
